@@ -65,7 +65,8 @@ class StudentGateway
   public function update(string $id, array $new): int {
     $sql = "UPDATE cms_schema.students 
     SET group_name = :group_name, first_name = :first_name, last_name = :last_name, 
-        gender = :gender, birthday = :birthday, is_online = :is_online WHERE id=:id";
+        gender = :gender, birthday = :birthday, status = :status, email = :email,
+        password = :password WHERE id=:id";
 
     $stmt = $this->conn->prepare($sql);
 
@@ -76,7 +77,7 @@ class StudentGateway
     $stmt->bindValue(":last_name",  $new["last_name"], PDO::PARAM_STR);
     $stmt->bindValue(":gender",    $new["gender"], PDO::PARAM_STR);
     $stmt->bindValue(":birthday",  $new["birthday"], PDO::PARAM_STR);
-    $stmt->bindValue(":status",  $new["status"], PDO::PARAM_BOOL);
+    $stmt->bindValue(":status",  isset($new["status"]) ? (bool) $new["status"] : false, PDO::PARAM_BOOL);
     $stmt->bindValue(":email", $email, PDO::PARAM_STR);
     $stmt->bindValue(":password", $new["birthday"], PDO::PARAM_STR);
     $stmt->bindValue(":id", $id, PDO::PARAM_INT);
@@ -97,10 +98,8 @@ class StudentGateway
 
   public function deleteSeveral(string $ids): int {
     
-    $sql = "DELETE FROM cms_schema.students WHERE id IN (:ids)";
+    $sql = "DELETE FROM cms_schema.students WHERE id IN ($ids)";
     $stmt = $this->conn->prepare($sql);
-
-    $stmt->bindValue(":ids", $ids, PDO::PARAM_STR);
 
     $stmt->execute();
     return $stmt->rowCount();

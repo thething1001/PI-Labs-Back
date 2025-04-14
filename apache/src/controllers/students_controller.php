@@ -22,6 +22,7 @@ class StudentController
       return;
     }
 
+    echo $method;
     switch ($method) {
       case "GET":
         echo json_encode($student);
@@ -55,7 +56,7 @@ class StudentController
 
       default:
         http_response_code(405);
-        header("Allow: GET, PATCH, DELETE");
+        header("Allow: GET, PUT, DELETE");
     }
   }
 
@@ -91,7 +92,7 @@ class StudentController
           $ids = implode(",", array_map('intval', $data['ids']));
           $rows = $this->gateway->deleteSeveral($ids);
           echo json_encode([
-            "message" => "students $data deleted",
+            "message" => "students deleted",
             "rows" => $rows
           ]);
         } else {
@@ -102,7 +103,7 @@ class StudentController
 
       default:
         http_response_code(405);
-        header("Allow: GET, POST");
+        header("Allow: GET, POST, DELETE");
         break;
     }
   }

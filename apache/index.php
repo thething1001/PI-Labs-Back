@@ -11,7 +11,7 @@
 
 	header("Access-Control-Allow-Origin: http://127.0.0.1:5500");
 	header("Content-Type: application/json; charset=UTF-8");
-	header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
+	header("Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE");
 	header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 	
 	if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -23,7 +23,7 @@
 
 	switch ($uriSegments[1]) {
 		case 'students':
-			$id = $parts[2] ?? null;
+			$id = $uriSegments[2] ?? null;
 
 			$database = new Database("cms.local", "cms_database", "postgres", "postgres");
 			$database->getConnection();
