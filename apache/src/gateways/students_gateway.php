@@ -12,7 +12,7 @@ class StudentGateway
   public function getAll(): array
   {
     $sql = "SELECT *
-            FROM students
+            FROM cms_schema.students
             ORDER BY id ASC";
 
     $stmt = $this->conn->query($sql);
@@ -27,7 +27,7 @@ class StudentGateway
 
   public function create(array $data): string
   {
-    $sql = "INSERT INTO students (group_name, first_name, last_name, gender, birthday, status, email, password)
+    $sql = "INSERT INTO cms_schema.students (group_name, first_name, last_name, gender, birthday, status, email, password)
             VALUES (:group_name, :first_name, :last_name, :gender, :birthday, :status, :email, :password)";
 
     $stmt = $this->conn->prepare($sql);
@@ -50,7 +50,7 @@ class StudentGateway
 
   public function get(string $id) : array | false
   {
-    $sql = "SELECT * FROM students WHERE id = :id";
+    $sql = "SELECT * FROM cms_schema.students WHERE id = :id";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":id", $id, PDO::PARAM_INT);
@@ -63,7 +63,7 @@ class StudentGateway
   }
 
   public function update(string $id, array $new): int {
-    $sql = "UPDATE students 
+    $sql = "UPDATE cms_schema.students 
     SET group_name = :group_name, first_name = :first_name, last_name = :last_name, 
         gender = :gender, birthday = :birthday, is_online = :is_online WHERE id=:id";
 
@@ -86,7 +86,7 @@ class StudentGateway
   }
 
   public function deleteByID(string $id): int {
-    $sql = "DELETE FROM students WHERE id = :id";
+    $sql = "DELETE FROM cms_schema.students WHERE id = :id";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":id", $id, PDO::PARAM_INT);
@@ -97,7 +97,7 @@ class StudentGateway
 
   public function deleteSeveral(string $ids): int {
     
-    $sql = "DELETE FROM students WHERE id IN (:ids)";
+    $sql = "DELETE FROM cms_schema.students WHERE id IN (:ids)";
     $stmt = $this->conn->prepare($sql);
 
     $stmt->bindValue(":ids", $ids, PDO::PARAM_STR);

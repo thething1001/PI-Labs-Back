@@ -5,8 +5,7 @@ class StudentController
 
   public function processRequest(string $method, ?string $id): void
   {
-    echo $id;
-    if (isset($id)) {
+    if ($id) {
       $this->processResourceRequest($method, $id);
     } else {
       $this->processCollectionRequest($method);
@@ -113,9 +112,6 @@ class StudentController
     $errors = [];
 
     if ($is_new) {
-      if (empty($data["group_name"])) {
-        $errors[] = "Group is required";
-      }
       if (empty($data["first_name"])) {
         $errors[] = "First name is required";
       }
@@ -127,6 +123,16 @@ class StudentController
       }
       if (empty($data["gender"])) {
         $errors[] = "Gender is required";
+      }
+      if (empty($data["group_name"])) {
+        $errors[] = "Group is required";
+      }
+    }
+
+
+    if (array_key_exists("size", $data)) {
+      if (filter_var($data["size"], FILTER_VALIDATE_INT) === false) {
+        $errors[] = "size must be an integer";
       }
     }
 

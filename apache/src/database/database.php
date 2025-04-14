@@ -10,7 +10,7 @@ class Database
 
   public function getConnection(): PDO
   {
-    $dsn = "mysql:host={$this->host};dbname={$this->name};user={$this->user};password={$this->password}";
+    $dsn = "pgsql:host={$this->host};dbname={$this->name};user={$this->user};password={$this->password}";
     $pdo = new PDO($dsn, $this->user, $this->password, [
       PDO::ATTR_EMULATE_PREPARES => false,
       PDO::ATTR_STRINGIFY_FETCHES => false

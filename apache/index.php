@@ -25,7 +25,7 @@
 		case 'students':
 			$id = $parts[2] ?? null;
 
-			$database = new Database("localhost", "cms_app", "root", "");
+			$database = new Database("cms.local", "cms_database", "postgres", "postgres");
 			$database->getConnection();
 		
 			$gateway = new StudentGateway($database);
