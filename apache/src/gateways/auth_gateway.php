@@ -28,23 +28,17 @@ class AuthGateway
         return false;
     }
 
-    public function storeSession(string $userId, string $token): void
+    public function changeStatus(string $id, bool $status): bool
     {
-        $sql = "INSERT INTO cms_schema.sessions (user_id, token, created_at)
-                VALUES (:user_id, :token, NOW())";
+        $sql = "UPDATE cms_schema.students
+                SET status = :status
+                WHERE id = :id";
 
         $stmt = $this->conn->prepare($sql);
-        $stmt->bindValue(":user_id", $userId, PDO::PARAM_INT);
-        $stmt->bindValue(":token", $token, PDO::PARAM_STR);
+        $stmt->bindValue(":id", $id, PDO::PARAM_STR);
+        $stmt->bindValue(":status", $status, PDO::PARAM_BOOL);
         $stmt->execute();
-    }
 
-    public function clearSession(string $token): void
-    {
-        $sql = "DELETE FROM cms_schema.sessions WHERE token = :token";
-
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bindValue(":token", $token, PDO::PARAM_STR);
-        $stmt->execute();
+        return $stmt->rowCount() > 0;
     }
 }

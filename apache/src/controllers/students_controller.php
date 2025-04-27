@@ -110,33 +110,58 @@ class StudentController
 
   private function getValidationError(array $data, bool $is_new = true): array
   {
-    $errors = [];
-
-    if ($is_new) {
-      if (empty($data["first_name"])) {
-        $errors[] = "First name is required";
+      $errors = [];
+  
+      // Required fields for new students
+      if ($is_new) {
+          if (empty($data["first_name"])) {
+              $errors[] = "First name is required";
+          }
+          if (empty($data["last_name"])) {
+              $errors[] = "Last name is required";
+          }
+          if (empty($data["birthday"])) {
+              $errors[] = "Birthday is required";
+          }
+          if (empty($data["gender"])) {
+              $errors[] = "Gender is required";
+          }
+          if (empty($data["group_name"])) {
+              $errors[] = "Group is required";
+          }
       }
-      if (empty($data["last_name"])) {
-        $errors[] = "Last name is required";
+  
+      // Validate first_name if provided
+      if (array_key_exists("first_name", $data)) {
+          if (!empty($data["first_name"]) && !preg_match("/^[A-Za-z]{2,50}$/", $data["first_name"])) {
+              $errors[] = "First name must be 2-50 letters only";
+          }
       }
-      if (empty($data["birthday"])) {
-        $errors[] = "Birthday is required";
+  
+      // Validate last_name if provided
+      if (array_key_exists("last_name", $data)) {
+          if (!empty($data["last_name"]) && !preg_match("/^[A-Za-z]{2,50}$/", $data["last_name"])) {
+              $errors[] = "Last name must be 2-50 letters only";
+          }
       }
-      if (empty($data["gender"])) {
-        $errors[] = "Gender is required";
+  
+      // Validate birthday if provided
+      if (array_key_exists("birthday", $data)) {
+          if (!empty($data["birthday"])) {
+              try {
+                  $birthDate = new DateTime($data["birthday"]);
+                  $today = new DateTime();
+                  $age = $today->diff($birthDate)->y;
+  
+                  if ($age < 16 || $age > 100) {
+                      $errors[] = "Age must be between 16 and 100 years";
+                  }
+              } catch (Exception $e) {
+                  $errors[] = "Invalid birthday format";
+              }
+          }
       }
-      if (empty($data["group_name"])) {
-        $errors[] = "Group is required";
-      }
-    }
-
-
-    if (array_key_exists("size", $data)) {
-      if (filter_var($data["size"], FILTER_VALIDATE_INT) === false) {
-        $errors[] = "size must be an integer";
-      }
-    }
-
-    return $errors;
+      
+      return $errors;
   }
 }

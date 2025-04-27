@@ -1,7 +1,7 @@
 <?php
 class AuthController
 {
-    public function __construct(private AuthGateway $gateway) {}
+    public function __construct(private AuthGateway $gateway, private JwtController $jwtController) {}
 
     public function processRequest(string $method, string $action): void
     {
@@ -38,26 +38,25 @@ class AuthController
         }
 
         $user = $this->gateway->authenticate($data["email"], $data["password"]);
-
+        
         if (!$user) {
             http_response_code(401);
             echo json_encode(["message" => "Invalid credentials"]);
             return;
         }
 
-        // Generate a simple token (in production, use JWT or similar)
-        $token = bin2hex(random_bytes(16));
-        $this->gateway->storeSession($user["id"], $token);
+        $token = $this->jwtController->jwt_encode(["sub" => $user["id"],
+                                                   "exp" => time() + 60 * 60]);
+
+        $this->gateway->changeStatus($user["id"], true);
 
         http_response_code(200);
         echo json_encode([
             "message" => "Login successful",
             "token" => $token,
             "user" => [
-                "id" => $user["id"],
-                "email" => $user["email"],
-                "first_name" => $user["first_name"],
-                "last_name" => $user["last_name"]
+                "first_name" => $user['first_name'],
+                "last_name" => $user['last_name']
             ]
         ]);
     }
@@ -79,7 +78,8 @@ class AuthController
             return;
         }
 
-        $this->gateway->clearSession($token);
+        $token = $this->jwtController->jwt_decode($token);
+        $this->gateway->changeStatus($token["sub"], false);
 
         http_response_code(200);
         echo json_encode(["message" => "Logout successful"]);
