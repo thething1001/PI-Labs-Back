@@ -177,8 +177,6 @@ app.post("/chatrooms/:id/messages", verifyToken, async (req, res) => {
     return res.status(404).json({ error: "Chatroom not found" });
   }
 
-  console.log(chatroom);
-
   const message = new Message({
     chatroomId: chatroomId,
     sender: {
