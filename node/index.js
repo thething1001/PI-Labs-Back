@@ -106,7 +106,7 @@ app.get("/chatrooms", verifyToken, async (req, res) => {
 
 // Create chatroom
 app.post("/chatrooms", verifyToken, async (req, res) => {
-  const { participantIds } = req.body;
+  const { name, participantIds } = req.body;
   const participants = [];
   for (const id of participantIds) {
     const url = new URL(`${PHP_API_URL}/students/${id}`);
@@ -125,7 +125,7 @@ app.post("/chatrooms", verifyToken, async (req, res) => {
       throw new Error(`Failed to fetch student ${id}: ${response.status}`);
     participants.push({ ...response.data, status: false });
   }
-  const chatroom = new Chatroom({ participants });
+  const chatroom = new Chatroom({ name, participants });
   await chatroom.save();
   io.emit("chatroom_updated");
   res.status(201).json(chatroom);
@@ -133,8 +133,10 @@ app.post("/chatrooms", verifyToken, async (req, res) => {
 
 // Add participants to chatroom
 app.post("/chatrooms/:id/participants", verifyToken, async (req, res) => {
-  const { participantIds } = req.body;
+  const { name, participantIds } = req.body;
   const chatroom = await Chatroom.findById(req.params.id);
+  chatroom.participants = [];
+  chatroom.name = name;
   for (const id of participantIds) {
     const url = new URL(`${PHP_API_URL}/students/${id}`);
     const options = {
@@ -168,18 +170,30 @@ app.get("/chatrooms/:id/messages", verifyToken, async (req, res) => {
 // Send message
 app.post("/chatrooms/:id/messages", verifyToken, async (req, res) => {
   const { content } = req.body;
+  const chatroomId = req.params.id;
+
+  const chatroom = await Chatroom.findById(chatroomId);
+  if (!chatroom) {
+    return res.status(404).json({ error: "Chatroom not found" });
+  }
+
+  console.log(chatroom);
+
   const message = new Message({
-    chatroomId: req.params.id,
+    chatroomId: chatroomId,
     sender: {
       id: req.user.id,
       first_name: req.user.first_name,
       last_name: req.user.last_name,
-      status: true,
     },
     content,
   });
   await message.save();
-  io.to(req.params.id).emit("message", message);
+
+  chatroom.participants.forEach((participant) => {
+    io.to(Number(participant.id)).emit("message", message);
+  });
+
   res.status(201).json(message);
 });
 
@@ -189,6 +203,7 @@ io.on("connection", (socket) => {
     try {
       const decoded = jwt.verify(token, JWT_SECRET);
       socket.join(userId);
+      socket.userId = userId;
       await Chatroom.updateMany(
         { "participants.id": userId },
         { $set: { "participants.$.status": true } }
@@ -201,7 +216,7 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", async () => {
     await Chatroom.updateMany(
-      { "participants.id": socket.id },
+      { "participants.id": socket.userId },
       { $set: { "participants.$.status": false } }
     );
     io.emit("chatroom_updated");
