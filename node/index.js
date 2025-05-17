@@ -104,6 +104,22 @@ app.get("/chatrooms", verifyToken, async (req, res) => {
   res.json(chatrooms);
 });
 
+app.get("/chatrooms/:id", verifyToken, async (req, res) => {
+  const chatroom = await Chatroom.findById(req.params.id);
+  res.json(chatroom);
+});
+
+app.delete("/chatrooms/:id", verifyToken, async (req, res) => {
+  try {
+    await Chatroom.findByIdAndDelete(req.params.id);
+    await Message.deleteMany({ chatroomId: req.params.id });
+    res.status(200).json({ message: "Chatroom deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting chatroom:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // Create chatroom
 app.post("/chatrooms", verifyToken, async (req, res) => {
   const { name, participantIds } = req.body;
